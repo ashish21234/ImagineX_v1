@@ -6,6 +6,7 @@ Click here to try ImagineX live!
 https://imaginex-frontend.onrender.com
 
 ✨ Features
+
 Text-to-Image Generation: Simply type a descriptive prompt and watch as AI creates a unique image based on your text.
 
 Community Showcase: Browse a gallery of images created by other users.
