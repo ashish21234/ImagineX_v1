@@ -1,0 +1,52 @@
+Viewed imageController.js:10-31
+
+To understand how a string of letters turns into a visual image, we have to look at how computers store files and how **Base64 Encoding** works.
+
+Here is the step-by-step concept:
+
+---
+
+### 1. What is an Image under the hood?
+At the lowest level, a PNG or JPEG image is not visual—it is just **binary data** (a long sequence of bytes containing numbers from `0` to `255`, or bits of `0`s and `1`s). 
+These bytes contain:
+*   **Headers:** Metadata defining the format (PNG), image width, height, and color type.
+*   **Pixel Data:** The color values (Red, Green, Blue, Alpha) for every single pixel on the screen.
+
+---
+
+### 2. The Problem with Binary Data
+HTTP APIs (like the JSON responses returned by your backend) are built to send **text** (letters, numbers, and symbols). Sending raw binary data inside JSON will corrupt the file because JSON does not support raw binary bytes.
+
+---
+
+### 3. The Solution: Base64 Encoding
+To safely send binary data as text, we encode it into **Base64**. 
+Base64 uses a set of **64 standard characters** that every system agrees on:
+*   Uppercase letters: `A` to `Z` (26 characters)
+*   Lowercase letters: `a` to `z` (26 characters)
+*   Numbers: `0` to `9` (10 characters)
+*   Symbols: `+` and `/` (2 characters)
+
+#### The Conversion Process:
+Every **3 bytes** of raw binary data (representing $3 \times 8 \text{ bits} = 24 \text{ bits}$) are split into **4 groups of 6 bits** ($4 \times 6 \text{ bits} = 24 \text{ bits}$).
+Each 6-bit group represents a number from `0` to `63`. That number is mapped directly to one of the 64 characters.
+
+For example:
+```text
+Binary bytes:      [01001101] [01100110] [01111001] (3 bytes)
+Split into 6-bits:  010011     010110     011001     111001
+Decimal values:     19         22         25         57
+Base64 characters:  T          W          Z          5
+```
+Thus, the binary sequence becomes the text string `"TWZ5"`.
+
+---
+
+### 4. How the Browser Restores the Image
+
+When the browser receives the string `data:image/png;base64,TWZ5...` in the `src` attribute:
+
+1.  **Splitting:** The browser strips away the header `data:image/png;base64,` and reads the payload.
+2.  **Decoding:** It converts each letter (e.g., `T`, `W`, `Z`, `5`) back to its 6-bit binary equivalent.
+3.  **Reconstruction:** It joins those bits back into 8-bit bytes, fully reconstructing the original PNG file in the computer's memory.
+4.  **Rendering:** The browser's graphics engine reads the PNG file bytes, looks up the pixel grid coordinates and colors, and draws the pixels onto the user's screen.
